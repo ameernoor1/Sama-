@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جرب حظك - لعبة الأرقام العشوائية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(45deg, #7c3aed, #2563eb, #3b82f6);
+            background-size: 200% 200%;
+            animation: gradientBG 10s ease infinite;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .number-container {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            color: #7c3aed;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #7c3aed, #2563eb);
+            background-size: 200% 200%;
+            animation: gradientBG 5s ease infinite;
+            color: white;
+            padding: 1.25rem 2.5rem;
+            border-radius: 9999px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .whatsapp-button {
+            background-color: #25D366;
+            color: white;
+            padding: 1.25rem 2.5rem;
+            border-radius: 9999px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: none;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 28rem;
+            width: 90%;
+            margin: 2rem auto;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .rolling {
+            animation: rollNumber 0.2s linear infinite;
+        }
+
+        @keyframes rollNumber {
+            0% { transform: translateY(-100%) scale(0.9); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            max-width: 90%;
+            width: 500px;
+            text-align: center;
+            position: relative;
+            animation: modalShow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes modalShow {
+            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .success-message {
+            color: white;
+            text-align: center;
+            margin-top: 2rem;
+            opacity: 0;
+            transition: all 0.5s ease;
+            transform: translateY(20px);
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timer-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 2rem auto;
+        }
+
+        .timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            color: #7c3aed;
+            font-weight: bold;
+        }
+
+        .timer-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#7c3aed var(--progress), #e5e7eb 0deg);
+            animation: rotate 1s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes rotate {
+            from { --progress: 0deg; }
+            to { --progress: 360deg; }
+        }
+
+        #videoContainer {
+            width: 100%;
+            max-height: 300px;
+            overflow: hidden;
+            border-radius: 1rem;
+            margin: 1rem 0;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 1rem;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-screen">
+        <div class="text-center mb-8 animate__animated animate__fadeIn">
+            <h1 class="text-5xl font-bold text-white mb-4 animate__animated animate__bounceIn">جرب حظك اليوم! 🍀</h1>
+            <p class="text-2xl text-white">اضغط الزر واكتشف رقمك المميز</p>
+        </div>
+
+        <div class="card animate__animated animate__zoomIn">
+            <div class="number-container" id="numberDisplay">
+                اضغط الزر للبدء
+            </div>
+
+            <button class="spin-button" id="spinButton" onclick="spinWheel()">
+                جرب حظك!
+            </button>
+
+            <button class="whatsapp-button" id="whatsappButton" onclick="shareToWhatsApp()">
+                شارك على واتساب
+            </button>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h2 class="text-3xl font-bold mb-2 animate__animated animate__bounceIn">🎉 مبروك! 🎉</h2>
+            <p class="text-xl animate__animated animate__fadeIn">هذا هو رقمك المميز! يمكنك مشاركته على واتساب</p>
+        </div>
+    </div>
+
+    <!-- Modal for Ad -->
+    <div class="modal" id="adModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 animate__animated animate__fadeInDown">لتجربة حظك مرة أخرى</h2>
+            <p class="mb-4 text-gray-600 animate__animated animate__fadeIn">يرجى مشاهدة الإعلان للمتابعة</p>
+            
+            <div class="timer-container">
+                <div class="timer-circle"></div>
+                <div class="timer pulse" id="adTimer">10</div>
+            </div>
+
+            <div id="videoContainer" class="animate__animated animate__fadeIn">
+                <video id="adVideo" controls>
+                    <source src="https://firebasestorage.googleapis.com/v0/b/messageemeapp.appspot.com/o/stories%2FHOLIDAY%202022_1730846211263.mp4?alt=media&token=8fde02be-ebf4-463e-9a31-1abab16b9705" type="video/mp4">
+                    عذراً، متصفحك لا يدعم تشغيل الفيديو.
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <audio id="tickSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="completeSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const numbers = [
+            '123456', '234567', '345678', '456789', '567890',
+            '678901', '789012', '890123', '901234', '012345'
+        ];
+
+        let isSpinning = false;
+        let selectedNumber = null;
+        let attempts = 0;
+        let canTry = true;
+        const numberDisplay = document.getElementById('numberDisplay');
+        const spinButton = document.getElementById('spinButton');
+        const whatsappButton = document.getElementById('whatsappButton');
+        const successMessage = document.getElementById('successMessage');
+        const adModal = document.getElementById('adModal');
+        const adTimer = document.getElementById('adTimer');
+        const adVideo = document.getElementById('adVideo');
+        const tickSound = document.getElementById('tickSound');
+        const completeSound = document.getElementById('completeSound');
+        let spinInterval;
+
+        // Initialize attempts from localStorage
+        if (localStorage.getItem('attempts')) {
+            attempts = parseInt(localStorage.getItem('attempts'));
+            if (attempts > 1) { // Allow first try for free
+                canTry = false;
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning || !canTry) {
+                if (!canTry) {
+                    showAd();
+                }
+                return;
+            }
+            
+            attempts++;
+            localStorage.setItem('attempts', attempts);
+            if (attempts > 1) {
+                canTry = false;
+            }
+            
+            isSpinning = true;
+            spinButton.disabled = true;
+            spinButton.textContent = 'جاري الاختيار...';
+            whatsappButton.style.display = 'none';
+            successMessage.classList.remove('show');
+            numberDisplay.classList.add('rolling');
+
+            let duration = 3000;
+            let startTime = Date.now();
+            
+            spinInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress >= 1) {
+                    clearInterval(spinInterval);
+                    finishSpin();
+                } else {
+                    const randomIndex = Math.floor(Math.random() * numbers.length);
+                    numberDisplay.textContent = numbers[randomIndex];
+                    tickSound.currentTime = 0;
+                    tickSound.play();
+                }
+            }, 50);
+        }
+
+        function finishSpin() {
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = 'جرب حظك!';
+            
+            const finalIndex = Math.floor(Math.random() * numbers.length);
+            selectedNumber = numbers[finalIndex];
+            numberDisplay.textContent = selectedNumber;
+            numberDisplay.classList.remove('rolling');
+            
+            whatsappButton.style.display = 'block';
+            successMessage.classList.add('show');
+            completeSound.play();
+        }
+
+        function showAd() {
+            adModal.style.display = 'flex';
+            adVideo.play();
+            let timeLeft = 10;
+            
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                adTimer.textContent = timeLeft;
+                document.documentElement.style.setProperty('--progress', `${(timeLeft/10)*360}deg`);
+                
+                if (timeLeft > 0) {
+                    tickSound.currentTime = 0;
+                    tickSound.play();
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    adTimer.textContent = 'تم!';
+                    completeSound.play();
+                    setTimeout(() => {
+                        hideAd();
+                        canTry = true;
+                        attempts = 1; // Reset to 1 to maintain the "first try free" logic
+                        localStorage.setItem('attempts', attempts);
+                    }, 1000);
+                }
+            }, 1000);
+
+            adVideo.onended = function() {
+                if (timeLeft <= 0) {
+                    hideAd();
+                    canTry = true;
+                    attempts = 1;
+                    localStorage.setItem('attempts', attempts);
+                }
+            };
+        }
+
+        function hideAd() {
+            adModal.style.display = 'none';
+            adVideo.pause();
+            adVideo.currentTime = 0;
+            }
+
+        function shareToWhatsApp() {
+            const message = `مرحباً! هذا هو رقمي المميز: ${selectedNumber} 🍀\nجرب حظك أنت أيضاً! 🎮`;
+            const whatsappUrl = `https://wa.me/9647813798636?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // إضافة تأثيرات صوتية عند تحريك الماوس فوق الأزرار
+        spinButton.addEventListener('mouseover', () => {
+            tickSound.currentTime = 0;
+            tickSound.volume = 0.3;
+            tickSound.play();
+        });
+
+        whatsappButton.addEventListener('mouseover', () => {
+            tickSound.currentTime = 0;
+            tickSound.volume = 0.3;
+            tickSound.play();
+        });
+
+        // تحسين تجربة المستخدم مع الفيديو
+        adVideo.addEventListener('play', () => {
+            adVideo.classList.add('animate__animated', 'animate__fadeIn');
+        });
+
+        // إضافة مؤثرات للعداد
+        function updateTimerAnimation(timeLeft) {
+            const progress = (timeLeft / 10) * 100;
+            const timerCircle = document.querySelector('.timer-circle');
+            timerCircle.style.background = `conic-gradient(
+                #7c3aed ${progress}%,
+                #e5e7eb ${progress}%
+            )`;
+        }
+
+        // تحسين التفاعل مع النافذة المنبثقة
+        adModal.addEventListener('click', (e) => {
+            if (e.target === adModal) {
+                // لا نغلق النافذة عند النقر خارجها لضمان مشاهدة الإعلان
+                adModal.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    adModal.classList.remove('animate__animated', 'animate__shakeX');
+                }, 1000);
+            }
+        });
+
+        // تحسين تجربة التحميل
+        window.addEventListener('load', () => {
+            // تحميل مسبق للأصوات
+            tickSound.load();
+            completeSound.load();
+            
+            // إضافة تأثير ظهور تدريجي للصفحة
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 1s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // إضافة تأثيرات للأرقام المتحركة
+        function addNumberAnimation() {
+            numberDisplay.classList.add('animate__animated', 'animate__bounceIn');
+            setTimeout(() => {
+                numberDisplay.classList.remove('animate__animated', 'animate__bounceIn');
+            }, 1000);
+        }
+
+        // تحسين تجربة العرض على الأجهزة المحمولة
+        function checkMobileDevice() {
+            if (window.innerWidth <= 768) {
+                // تعديل حجم الخط والأزرار للأجهزة المحمولة
+                numberDisplay.style.fontSize = '2.5rem';
+                spinButton.style.fontSize = '1.2rem';
+                whatsappButton.style.fontSize = '1.2rem';
+            }
+        }
+
+        // إضافة مؤثرات إضافية للنجاح
+        function showSuccessEffects() {
+            // إضافة Confetti عند الفوز
+            const colors = ['#7c3aed', '#2563eb', '#3b82f6', '#60a5fa'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                confetti.style.opacity = Math.random();
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+
+        // تحسين أداء التطبيق
+        function optimizePerformance() {
+            // إزالة المؤثرات بعد انتهائها
+            document.querySelectorAll('.animate__animated').forEach(element => {
+                element.addEventListener('animationend', () => {
+                    element.classList.remove('animate__animated');
+                });
+            });
+        }
+
+        // تشغيل الوظائف عند بدء التطبيق
+        window.addEventListener('DOMContentLoaded', () => {
+            checkMobileDevice();
+            optimizePerformance();
+            
+            // إضافة مؤثرات CSS للصفحة
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes confetti {
+                    0% { transform: translateY(-100vh) rotate(0deg); }
+                    100% { transform: translateY(100vh) rotate(360deg); }
+                }
+                .confetti {
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    z-index: 1000;
+                    animation: confetti linear forwards;
+                    pointer-events: none;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // إضافة دعم للوضع المظلم
+        function checkDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+
+        // تحسين تجربة المستخدم عند انقطاع الاتصال
+        window.addEventListener('offline', () => {
+            alert('يرجى التحقق من اتصال الإنترنت للاستمرار باللعب');
+        });
+
+        // إضافة دعم للتخزين المؤقت
+        function cacheGameAssets() {
+            if ('caches' in window) {
+                caches.open('game-assets').then(cache => {
+                    cache.addAll([
+                        'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+                        'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3'
+                    ]);
+                });
+            }
+        }
+
+        // تشغيل وظائف التحسين
+        checkDarkMode();
+        cacheGameAssets();
+    </script>
+</body>
+</html>
